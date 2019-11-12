@@ -103,5 +103,13 @@ def get_real_payload(mask, mask_key, payload):
 def int_to_bytes(x):
     return x.to_bytes((x.bit_length() + 7) // 8, 'big')
 
+def build_packet_payload(payloads):
+    packet_payload = b''
+    for payload in payloads:
+        packet_payload += payload
+    
+    return packet_payload
+
+# print(build_packet_payload([b'\x01', b'\x01', b'\x01\x02']))
 # print(get_real_payload(1, b'%r\x14d', b'D\x01|\rD\x13u\x14U\x02'))
 # print(build_frame(1, 1, 1, 1 , 1, 0, 1, 1, bytes('', 'utf-8')))

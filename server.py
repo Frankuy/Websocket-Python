@@ -27,7 +27,8 @@ class ThreadedServer():
 		# Handshake Phase
 		handshake_data = client.recv(size)
 		client.send(bytes(handshake.response_handshake(handshake_data), 'utf-8'))
-
+		
+		data_received = []
 		while True:
 			try:
 				# Getting Data Phase
@@ -61,35 +62,38 @@ class ThreadedServer():
 
 						# Requirment 3
 						# If client send binary file, server should validate file using md5 checksum
-						file_ = open('OlengCaptain.zip', 'rb').read()
-						message = frame['PAYLOAD']
+						data_received.append(frame['PAYLOAD'])
+						if frame['FIN'] == 1:
+							file_ = open('OlengCaptain.zip', 'rb').read()
+							file_from_client = framing.build_packet_payload(data_received)
 
-						checksum_file_ = hashlib.md5(file_).hexdigest()
-						checksum_message = hashlib.md5(message).hexdigest()
-						if (checksum_file_ == checksum_message):
-							paket = bytes("1", 'utf-8')
-						else:
-							paket = bytes("0", 'utf-8')
+							checksum_file_ = hashlib.md5(file_).hexdigest()
+							checksum_file_from_client = hashlib.md5(file_from_client).hexdigest()
+							if (checksum_file_ == checksum_file_from_client):
+								paket = bytes("1", 'utf-8')
+							else:
+								paket = bytes("0", 'utf-8')
+							client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, 1, 0, paket))
 
-						client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, 1, 0, paket)
 
 					elif opcode == 0x08:
 						# Connection close
-
 						client.close()
+
 					elif opcode == 0x09:
 						# Ping Control Frame
-						 message = framing.build_frame(
+						message = framing.build_frame(
 							frame['FIN'],
 							frame['RSV1'],
 							frame['RSV2'],
 							frame['RSV3'],
 							0x0A, # Pong
-							frame['MASK'],
+							0,
 							frame['PAYLOAD_LEN'],
-							frame['MASK_KEY'],
+							0,
 							frame['PAYLOAD']
 						)
+						client.send(message)
 						# Put send message here
 					elif opcode == 0x0A:
 						# Pong Control Frame
