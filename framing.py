@@ -57,10 +57,41 @@ def parse_frame(frame):
     
     return result
 
-def build_frame(fin, rsv1, rsv2, rsv3, opcode, mask, payload_len, mask_key, payload):
-    ## TODO ##
-    return b''
+def build_frame(fin, rsv1, rsv2, rsv3, opcode, mask, payload_len, mask_key, 
+        payload):
+    # ADD FIRST 4-BIT 
+    frame = (fin << 3) + (rsv1 << 2) + (rsv2 << 1) + rsv3
+
+    # Append OPCODE to FRAME 
+    frame = (frame << 4) + opcode
+
+    # Append MASK to FRAME
+    frame = (frame << 1) + mask
+
+    # Append PAYLOAD_LEN to FRAME
+    if (len(payload) >= 0 and len(payload) <= 125):
+        frame = (frame << 7) + len(payload)
+    elif (len(payload) >= 126 and len(payload) <= 65535):
+        frame = (frame << 7) + 126
+        frame = (frame << 16) + len(payload)
+    elif (len(payload) >= 65536):
+        frame = (frame << 7) + 127
+        frame = (frame << 64) + len(payload)
+    
+    # Append MASK_KEY to FRAME
+    if (mask == 1):
+        frame = (frame << 32) + mask_key
+    
+    # Append PAYLOAD to FRAME
+    frame = (frame << len(payload)) + int.from_bytes(payload, byteorder='big')
+
+    return frame
 
 def get_real_payload(mask, mask_key, payload):
     ## TODO ##
     return b''
+
+def int_to_bytes(x):
+    return x.to_bytes((x.bit_length() + 7) // 8, 'big')
+
+# print(int_to_bytes(build_frame(1, 1, 1, 1 , 1, 0, 1, 1, bytes('', 'utf-8'))))
