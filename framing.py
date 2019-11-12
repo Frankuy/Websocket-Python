@@ -1,4 +1,5 @@
 ## CONSTANT ##
+
 FIN_IDX = 0
 RSV_1_IDX = 0
 RSV_2_IDX = 0
@@ -36,7 +37,7 @@ def parse_frame(frame):
         if mask == 1:
             MASK_KEY_IDX = 10
             PAYLOAD_IDX += 4
-    
+
     ## GET MASK KEY ##
     mask_key = frame[MASK_KEY_IDX:MASK_KEY_IDX+4]
 
@@ -54,7 +55,7 @@ def parse_frame(frame):
 		"MASK_KEY" : mask_key,
 		"PAYLOAD" : payload
 	}
-    
+
     return result
 
 def build_frame(fin, rsv1, rsv2, rsv3, opcode, mask, payload_len, mask_key, payload):
@@ -62,5 +63,18 @@ def build_frame(fin, rsv1, rsv2, rsv3, opcode, mask, payload_len, mask_key, payl
     return b''
 
 def get_real_payload(mask, mask_key, payload):
-    ## TODO ##
-    return b''
+
+    hasil = b''
+
+    if (mask == 1) :
+        for i in range(len(payload)):
+            hasil = hasil + int_to_bytes(payload[i] ^ mask_key[i % 4])
+
+    return hasil
+
+def int_to_bytes(data):
+    result = bytes(str(chr(data)), "ascii")
+    return result
+
+def bytes_to_ascii(data):
+    return data[4:8].decode("ascii")
