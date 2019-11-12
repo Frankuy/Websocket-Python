@@ -35,18 +35,50 @@ class ThreadedServer():
 				if data:
 					frame = framing.parse_frame(data)
 					real_payload = framing.get_real_payload(frame['MASK'], frame['MASK_KEY'], frame['PAYLOAD'])
-					
-					# Requirment 1
-					# If client send '!echo <message>', server should reply the same <message>
-					# TODO
+					opcode = frame['OPCODE']
+					if opcode == 0x00:
+						# Continuation
+						# TODO
+						pass
+					elif opcode == 0x01:
+						# Text frame
 
-					# Requirment 2
-					# If client send '!submission', server should reply 
-					# TODO
-					
-					# Requirment 3
-					# If client send binary file, server should validate file using md5 checksum
-					# TODO
+						# Requirment 1
+						# If client send '!echo <message>', server should reply the same <message>
+						# TODO
+
+						# Requirment 2
+						# If client send '!submission', server should reply 
+						# TODO
+						pass
+					elif opcode == 0x02:
+						# Binary frame
+
+						# Requirment 3
+						# If client send binary file, server should validate file using md5 checksum
+						# TODO
+						pass
+					elif opcode == 0x08:
+						# Connection close
+
+						client.close()
+					elif opcode == 0x09:
+						# Ping Control Frame
+						 message = framing.build_frame(
+							frame['FIN'],
+							frame['RSV1'],
+							frame['RSV2'],
+							frame['RSV3'],
+							0x0A, # Pong
+							frame['MASK'],
+							frame['PAYLOAD_LEN'],
+							frame['MASK_KEY'],
+							frame['PAYLOAD']
+						)
+						# Put send message here
+					elif opcode == 0x0A:
+						# Pong Control Frame
+						pass # Does nothing
 
 			except:
 				client.close()
