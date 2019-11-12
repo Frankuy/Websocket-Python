@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import hashlib
 import handshake
 import framing
 
@@ -23,7 +23,7 @@ class ThreadedServer():
 	def listenToClient(self, client, address):
 		size = 20000
 		print(f"> Getting data from {client.getpeername()}")
-		
+
 		# Handshake Phase
 		handshake_data = client.recv(size)
 		client.send(bytes(handshake.response_handshake(handshake_data), 'utf-8'))
@@ -48,7 +48,7 @@ class ThreadedServer():
 						text_payload = real_payload.decode('utf-8')
 						if text_payload.startswith('!echo '):
 							message = text_payload[6:]
-							client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, len(message), 0, bytes(message, 'utf-8')))						
+							client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, len(message), 0, bytes(message, 'utf-8')))
 
 						# Requirment 2
 						# If client send '!submission', server should reply .zip file including
@@ -61,8 +61,18 @@ class ThreadedServer():
 
 						# Requirment 3
 						# If client send binary file, server should validate file using md5 checksum
-						# TODO
-						pass
+						file_ = open('OlengCaptain.zip', 'rb').read()
+						message = frame['PAYLOAD']
+
+						checksum_file_ = hashlib.md5(file_).hexdigest()
+						checksum_message = hashlib.md5(message).hexdigest()
+						if (checksum_file_ == checksum_message):
+							paket = bytes("1", 'utf-8')
+						else:
+							paket = bytes("0", 'utf-8')
+
+						client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, 1, 0, paket)
+
 					elif opcode == 0x08:
 						# Connection close
 
