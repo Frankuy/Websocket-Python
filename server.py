@@ -45,7 +45,10 @@ class ThreadedServer():
 
 						# Requirment 1
 						# If client send '!echo <message>', server should reply the same <message>
-						# TODO
+						text_payload = real_payload.decode('utf-8')
+						if text_payload.startswith('!echo '):
+							message = text_payload[6:]
+							client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, len(message), 0, bytes(message, 'utf-8')))						
 
 						# Requirment 2
 						# If client send '!submission', server should reply 

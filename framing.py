@@ -81,10 +81,11 @@ def build_frame(fin, rsv1, rsv2, rsv3, opcode, mask, payload_len, mask_key,
     
     # Append MASK_KEY to FRAME
     if (mask == 1):
-        frame = (frame << 32) + mask_key
+        frame = (frame << 32) + int.from_bytes(mask_key, byteorder='big')
     
     # Append PAYLOAD to FRAME
-    frame = int_to_bytes((frame << len(payload)) + int.from_bytes(payload, byteorder='big'))
+    # frame = int_to_bytes((frame << len(payload)) + int.from_bytes(payload, byteorder='big'))
+    frame = int_to_bytes((frame << len(payload)*8) + int.from_bytes(payload, byteorder='big'))
 
     return frame
 
