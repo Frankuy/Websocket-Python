@@ -51,9 +51,11 @@ class ThreadedServer():
 							client.send(framing.build_frame(1, 0, 0, 0, 0x01, 0, len(message), 0, bytes(message, 'utf-8')))						
 
 						# Requirment 2
-						# If client send '!submission', server should reply 
-						# TODO
-						pass
+						# If client send '!submission', server should reply .zip file including
+						if text_payload == '!submission':
+							file_ = open('OlengCaptain.zip', 'rb').read()
+							client.send(framing.build_frame(1, 0, 0, 0, 0x02, 0, len(file_), 0, file_))
+
 					elif opcode == 0x02:
 						# Binary frame
 
